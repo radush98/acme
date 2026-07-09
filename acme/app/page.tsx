@@ -6,11 +6,11 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div>
+    <div className="flex h-screen flex-col overflow-hidden">
       <Header>
         <Logo/>
       </Header>
-      <main className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
+      <div className="flex min-h-0 flex-1 overflow-hidden bg-background text-foreground">
         <Sidebar>
           <div className="flex flex-col gap-4">
             <Link href="/">Главная</Link>
@@ -21,8 +21,7 @@ export default function Home() {
         <Content>
           <h1>Test</h1>
         </Content>
-      </main>
-
+      </div>
     </div>
 
     // <div className="flex flex-1 flex-col items-center justify-center bg-zinc-50 px-6 py-16 font-sans dark:bg-black">

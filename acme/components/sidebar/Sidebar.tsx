@@ -1,5 +1,5 @@
 export const Sidebar: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    return <aside className="w-fit h-full w-sidebar bg-sidebar text-sidebar-foreground p-4 border-r border-border flex shrink-0">
+    return <aside className="flex h-full w-64 shrink-0 flex-col border-r border-border bg-muted p-4 text-foreground">
         {children}
     </aside>
 }

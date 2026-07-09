@@ -1,3 +1,3 @@
 export const Content: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    return <main className="relative flex-1 overflow-auto p-4">{children}</main>
+    return <div className="relative min-h-0 flex-1 overflow-auto p-4">{children}</div>
 }
