@@ -9,6 +9,7 @@ import { fileStorageService, type FileNode } from "@/shared/services";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useCallback, useEffect, useState } from "react";
+import { NoFiles } from "./noFiles/NoFiles";
 
 function toTableRow(node: FileNode): TableRowProps {
   return {
@@ -46,19 +47,28 @@ export const FileExplorer = () => {
           Create Folder
         </Button>
       </LocationHeader>
-      <DragNDrop parentId={currentFolderId} onUploaded={() => void loadItems()}>
-        <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-bold">Drag and Drop</h1>
-          <p className="text-sm text-gray-500">Drag and drop files here</p>
-        </div>
-      </DragNDrop>
-      <Table
-        items={items.map((item) =>
-          item.type === "folder"
-            ? { ...item, onClick: () => handleFolderOpen(item.id) }
-            : item,
-        )}
-      />
+      {items.length > 0 ? (
+        <>
+          <DragNDrop parentId={currentFolderId} onUploaded={() => void loadItems()}>
+            <div className="flex flex-col gap-2">
+              <h1 className="text-2xl font-bold">Drag and Drop</h1>
+              <p className="text-sm text-gray-500">Drag and drop files here</p>
+            </div>
+          </DragNDrop>
+          <Table
+            items={items.map((item) =>
+              item.type === "folder"
+                ? { ...item, onClick: () => handleFolderOpen(item.id) }
+                : item,
+            )}
+          />
+        </>
+      ) : (
+        <NoFiles
+          parentId={currentFolderId}
+          onUploaded={() => void loadItems()}
+        />
+      )}
     </>
   );
 };
