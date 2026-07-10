@@ -164,7 +164,10 @@ export class FileStorageService {
           return left.type === "folder" ? -1 : 1;
         }
 
-        return left.name.localeCompare(right.name, undefined, {
+        const leftName = left.name ?? "";
+        const rightName = right.name ?? "";
+
+        return leftName.localeCompare(rightName, undefined, {
           sensitivity: "base",
         });
       });

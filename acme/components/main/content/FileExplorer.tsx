@@ -1,5 +1,6 @@
 "use client";
 
+import { CreateFolderModal } from "@/components/main/content/createFolderModal/CreateFolderModal";
 import { DragNDrop } from "@/components/main/content/dragNDrop/DragNDrop";
 import { LocationHeader } from "@/components/main/content/locationHeader/LocationHeader";
 import { Table } from "@/components/main/content/table/Table";
@@ -26,6 +27,8 @@ export const FileExplorer = () => {
   const [items, setItems] = useState<TableRowProps[]>([]);
   const [breadcrumbs, setBreadcrumbs] = useState<FileNode[]>([]);
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
+  const [isCreateFolderModalOpen, setIsCreateFolderModalOpen] = useState(false);
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
 
   const loadItems = useCallback(async () => {
     const children = await fileStorageService.getChildren(currentFolderId);
@@ -50,15 +53,15 @@ export const FileExplorer = () => {
     setCurrentFolderId(folderId);
   };
 
-  const handleCreateFolder = async () => {
-    const name = window.prompt("Enter folder name");
+  const handleCreateFolder = async (name: string) => {
+    setIsCreatingFolder(true);
 
-    if (!name?.trim()) {
-      return;
+    try {
+      await fileStorageService.createFolder(name, currentFolderId);
+      await loadItems();
+    } finally {
+      setIsCreatingFolder(false);
     }
-
-    await fileStorageService.createFolder(name.trim(), currentFolderId);
-    await loadItems();
   };
 
   return (
@@ -70,12 +73,18 @@ export const FileExplorer = () => {
         <Button
           primary
           className="flex items-center gap-2"
-          onClick={() => void handleCreateFolder()}
+          onClick={() => setIsCreateFolderModalOpen(true)}
         >
           <FontAwesomeIcon icon={faPlus} className="h-4 w-4" />
           Create Folder
         </Button>
       </LocationHeader>
+      <CreateFolderModal
+        isOpen={isCreateFolderModalOpen}
+        isSubmitting={isCreatingFolder}
+        onClose={() => setIsCreateFolderModalOpen(false)}
+        onSubmit={handleCreateFolder}
+      />
       {items.length > 0 ? (
         <>
           <DragNDrop parentId={currentFolderId} onUploaded={() => void loadItems()}>
