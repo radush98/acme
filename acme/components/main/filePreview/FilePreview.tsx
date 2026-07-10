@@ -59,7 +59,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({ fileId }) => {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background text-muted-foreground">
+      <div className="flex h-full min-h-0 flex-1 items-center justify-center bg-background text-muted-foreground">
         Loading preview...
       </div>
     );
@@ -67,7 +67,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({ fileId }) => {
 
   if (error || !file || !previewUrl) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-4 bg-background">
+      <div className="flex h-full min-h-0 flex-1 flex-col items-center justify-center gap-4 bg-background">
         <p className="text-lg text-foreground">{error ?? "File not found."}</p>
         <Link href="/" className="text-primary hover:underline">
           Back to Explorer
@@ -77,7 +77,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({ fileId }) => {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-full min-h-0 flex-1 overflow-hidden bg-background">
       <iframe
         src={previewUrl}
         title={file.name}

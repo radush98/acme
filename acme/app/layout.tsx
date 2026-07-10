@@ -1,3 +1,5 @@
+import { Header } from "@/components/main/header/Header";
+import { Logo } from "@/components/main/logo/Logo";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -27,7 +29,14 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col overflow-hidden">{children}</body>
+      <body className="flex min-h-full flex-col overflow-hidden">
+        <div className="flex h-screen flex-col overflow-hidden">
+          <Header>
+            <Logo />
+          </Header>
+          <main className="flex min-h-0 flex-1 overflow-hidden">{children}</main>
+        </div>
+      </body>
     </html>
   );
 }
