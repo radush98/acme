@@ -1,15 +1,10 @@
 import { Content } from "@/components/main/content/Content";
-import { DragNDrop } from "@/components/main/content/dragNDrop/DragNDrop";
+import { FileExplorer } from "@/components/main/content/FileExplorer";
 import { Header } from "@/components/main/header/Header";
 import { Logo } from "@/components/main/logo/Logo";
 import { Sidebar } from "@/components/main/sidebar/Sidebar";
 import { SidebarItem } from "@/components/main/sidebar/sidebarItem/SidebarItem";
-import { Table } from "@/components/main/content/table/Table";
-import { items, SIDEBAR_ITEMS } from "@/shared/constants";
-import { LocationHeader } from "@/components/main/content/locationHeader/LocationHeader";
-import { Button } from "@/components/shared/Button/Button";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { SIDEBAR_ITEMS } from "@/shared/constants";
 
 export default function Home() {
   return (
@@ -24,19 +19,7 @@ export default function Home() {
           ))}
         </Sidebar>
         <Content>
-        <LocationHeader>
-          <Button primary className="flex items-center gap-2">
-            <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
-            Create Folder
-          </Button>
-        </LocationHeader>
-            <DragNDrop>
-              <div className="flex flex-col gap-2">
-                <h1 className="text-2xl font-bold">Drag and Drop</h1>
-                <p className="text-sm text-gray-500">Drag and drop files here</p>
-              </div>
-            </DragNDrop>
-            <Table items={items} />
+          <FileExplorer />
         </Content>
       </div>
     </div>

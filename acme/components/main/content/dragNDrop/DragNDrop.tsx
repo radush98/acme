@@ -5,6 +5,8 @@ import { useRef, useState, type DragEvent, type ReactNode } from "react";
 import { partitionFiles, toAcceptAttribute } from "./utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpload } from "@fortawesome/free-solid-svg-icons";
+import { fileStorageService, type FileNode } from "@/shared/services";
+import { Loader } from "@/components/shared/Loader/Loader";
 
 interface DragNDropProps {
   children?: ReactNode;
@@ -12,6 +14,9 @@ interface DragNDropProps {
   accept?: string;
   onFiles?: (files: File[]) => void;
   onReject?: (files: File[]) => void;
+  onUploaded?: (nodes: FileNode[]) => void;
+  onUploadError?: (error: unknown) => void;
+  parentId?: string | null;
   multiple?: boolean;
   className?: string;
 }
@@ -22,14 +27,35 @@ export const DragNDrop: React.FC<DragNDropProps> = ({
   accept,
   onFiles,
   onReject,
-  multiple,
+  onUploaded,
+  onUploadError,
+  parentId = null,
+  multiple = true,
   className,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const uploadFiles = async (files: File[]) => {
+    setIsUploading(true);
+
+    try {
+      const nodes = await Promise.all(
+        files.map((file) => fileStorageService.upload(file, parentId)),
+      );
+
+      onUploaded?.(nodes);
+      onFiles?.(files);
+    } catch (error) {
+      onUploadError?.(error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleFiles = (files: FileList | null) => {
-    if (!files?.length) {
+    if (!files?.length || isUploading) {
       return;
     }
 
@@ -40,7 +66,7 @@ export const DragNDrop: React.FC<DragNDropProps> = ({
     }
 
     if (accepted.length) {
-      onFiles?.(accepted);
+      void uploadFiles(accepted);
     }
 
     if (inputRef.current) {
@@ -65,15 +91,19 @@ export const DragNDrop: React.FC<DragNDropProps> = ({
   };
 
   return (
-    <div
+    <>
+      <Loader isOpen={isUploading} />
+      <div
       role="button"
       tabIndex={0}
+      aria-busy={isUploading}
       className={clsx(
         "relative min-h-40 cursor-pointer transition-shadow border-2 border-dashed border-gray-300 rounded-md",
         isDragging && "ring-2 ring-primary ring-offset-2",
+        isUploading && "pointer-events-none opacity-60",
         className,
       )}
-      onClick={() => inputRef.current?.click()}
+      onClick={() => !isUploading && inputRef.current?.click()}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
@@ -99,5 +129,6 @@ export const DragNDrop: React.FC<DragNDropProps> = ({
         {children}
       </div>
     </div>
+    </>
   );
 };
