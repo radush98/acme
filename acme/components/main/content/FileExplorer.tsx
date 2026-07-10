@@ -21,6 +21,7 @@ import {
 } from "@/shared/services";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { NoFiles } from "./noFiles/NoFiles";
 
@@ -36,6 +37,7 @@ function toTableRow(node: FileNode): TableRowProps {
 }
 
 export const FileExplorer = () => {
+  const router = useRouter();
   const [items, setItems] = useState<TableRowProps[]>([]);
   const [breadcrumbs, setBreadcrumbs] = useState<FileNode[]>([]);
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
@@ -83,6 +85,10 @@ export const FileExplorer = () => {
 
   const handleFolderOpen = (folderId: string) => {
     setCurrentFolderId(folderId);
+  };
+
+  const handleFileOpen = (fileId: string) => {
+    router.push(`/file/${fileId}`);
   };
 
   const handleRenameRequest = (item: TableRowProps) => {
@@ -263,7 +269,7 @@ export const FileExplorer = () => {
               onClick:
                 item.type === "folder"
                   ? () => handleFolderOpen(item.id)
-                  : undefined,
+                  : () => handleFileOpen(item.id),
               onRename: () => handleRenameRequest(item),
               onDelete: () => void handleDeleteRequest(item),
             }))}
