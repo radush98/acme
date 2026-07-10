@@ -1,6 +1,17 @@
 import { MIME_EXTENSIONS } from "@/shared/constants";
 import type { FileNode, StoredFileNode } from "./types";
 
+const BYTES_IN_MB = 1024 * 1024;
+
+export function formatFileSizeInMb(sizeInBytes?: number): string {
+  if (sizeInBytes === undefined) {
+    return "-";
+  }
+
+  const sizeInMb = sizeInBytes / BYTES_IN_MB;
+  return `${sizeInMb.toFixed(2)} MB`;
+}
+
 const MIME_FORMAT_LABELS: Record<string, string> = {
   "application/pdf": "PDF",
 };

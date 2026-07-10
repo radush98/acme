@@ -1,6 +1,7 @@
 export {
   FileStorageService,
   fileStorageService,
+  formatFileSizeInMb,
   getFormatFromFile,
   getFormatFromMime,
 } from "./fileStorage";

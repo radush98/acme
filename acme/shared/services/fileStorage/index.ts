@@ -9,6 +9,10 @@ export type {
 } from "./types";
 
 export { FileStorageService } from "./fileStorageService";
-export { getFormatFromFile, getFormatFromMime } from "./utils";
+export {
+  formatFileSizeInMb,
+  getFormatFromFile,
+  getFormatFromMime,
+} from "./utils";
 
 export const fileStorageService = new FileStorageService();
