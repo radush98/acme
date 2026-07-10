@@ -10,7 +10,11 @@ import {
   UploadToaster,
   useUploadToasts,
 } from "@/components/shared/Toast/useUploadToasts";
-import { fileStorageService, type FileNode } from "@/shared/services";
+import {
+  fileStorageService,
+  type FileNode,
+  type UploadNameConflictStrategy,
+} from "@/shared/services";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useCallback, useEffect, useState } from "react";
@@ -33,7 +37,8 @@ export const FileExplorer = () => {
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [isCreateFolderModalOpen, setIsCreateFolderModalOpen] = useState(false);
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
-  const { showUploadSuccessToast, showUploadErrorToast } = useUploadToasts();
+  const { showUploadSuccessToast, showUploadErrorToast, showWarningToast } =
+    useUploadToasts();
 
   const loadItems = useCallback(async () => {
     const children = await fileStorageService.getChildren(currentFolderId);
@@ -69,6 +74,30 @@ export const FileExplorer = () => {
     }
   };
 
+  const handleFileNameConflict = useCallback(
+    (file: File): Promise<UploadNameConflictStrategy | "skip"> =>
+      new Promise((resolve) => {
+        showWarningToast({
+          title: "File already exists",
+          subtitle: "Choose what to do with this file",
+          fileName: file.name,
+          duration: Infinity,
+          onClose: () => resolve("skip"),
+          actions: [
+            {
+              label: "Overwrite",
+              onClick: () => resolve("overwrite"),
+            },
+            {
+              label: "Rename",
+              onClick: () => resolve("rename"),
+            },
+          ],
+        });
+      }),
+    [showWarningToast],
+  );
+
   return (
     <>
       <LocationHeader
@@ -98,6 +127,7 @@ export const FileExplorer = () => {
             onUploaded={() => void loadItems()}
             onFileUploadSuccess={showUploadSuccessToast}
             onFileUploadError={showUploadErrorToast}
+            onFileNameConflict={handleFileNameConflict}
           >
             <div className="flex flex-col gap-2">
               <h1 className="text-2xl font-bold">Drag and Drop</h1>
@@ -118,6 +148,7 @@ export const FileExplorer = () => {
           onUploaded={() => void loadItems()}
           onFileUploadSuccess={showUploadSuccessToast}
           onFileUploadError={showUploadErrorToast}
+          onFileNameConflict={handleFileNameConflict}
         />
       )}
     </>

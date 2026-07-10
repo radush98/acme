@@ -1,6 +1,7 @@
 import type {
   FileNode,
   StoredFileNode,
+  UploadFileOptions,
   UpdateFileNodeInput,
 } from "./types";
 import {
@@ -13,6 +14,17 @@ const DB_NAME = "acme-file-storage";
 const DB_VERSION = 1;
 const NODES_STORE = "nodes";
 const BLOBS_STORE = "blobs";
+
+export class FileUploadNameConflictError extends Error {
+  constructor(
+    readonly file: File,
+    readonly existingNode: FileNode,
+    readonly parentId: string | null,
+  ) {
+    super(`File "${file.name}" already exists in this folder.`);
+    this.name = "FileUploadNameConflictError";
+  }
+}
 
 export class FileStorageService {
   private db: IDBDatabase | null = null;
@@ -36,14 +48,43 @@ export class FileStorageService {
     return this.initPromise;
   }
 
-  async upload(file: File, parentId: string | null = null): Promise<FileNode> {
+  async upload(
+    file: File,
+    parentId: string | null = null,
+    options: UploadFileOptions = {},
+  ): Promise<FileNode> {
     await this.init();
     await this.assertValidParent(parentId);
 
+    const nameConflict = options.nameConflict ?? "error";
+    const siblings = await this.getChildren(parentId);
+    const existingNode = this.findSameNameNode(file.name, siblings);
+
+    if (existingNode) {
+      if (nameConflict === "error") {
+        throw new FileUploadNameConflictError(file, existingNode, parentId);
+      }
+
+      if (nameConflict === "overwrite") {
+        return this.overwriteExistingFile(file, existingNode);
+      }
+
+      const renamedFileName = this.getNextWindowsFileName(file.name, siblings);
+      return this.createFileNode(file, parentId, renamedFileName);
+    }
+
+    return this.createFileNode(file, parentId, file.name);
+  }
+
+  private async createFileNode(
+    file: File,
+    parentId: string | null,
+    fileName: string,
+  ): Promise<FileNode> {
     const now = new Date();
     const node: FileNode = {
       id: crypto.randomUUID(),
-      name: file.name,
+      name: fileName,
       type: "file",
       parentId,
       size: file.size,
@@ -58,6 +99,28 @@ export class FileStorageService {
     });
 
     return node;
+  }
+
+  private async overwriteExistingFile(file: File, existingNode: FileNode): Promise<FileNode> {
+    if (existingNode.type !== "file") {
+      throw new Error(
+        `Cannot overwrite "${existingNode.name}" because it is a folder.`,
+      );
+    }
+
+    const updatedNode: FileNode = {
+      ...existingNode,
+      size: file.size,
+      format: getFormatFromFile(file),
+      updatedAt: new Date(),
+    };
+
+    await this.runTransaction([NODES_STORE, BLOBS_STORE], "readwrite", (tx) => {
+      tx.objectStore(NODES_STORE).put(toStoredNode(updatedNode));
+      tx.objectStore(BLOBS_STORE).put({ id: updatedNode.id, blob: file });
+    });
+
+    return updatedNode;
   }
 
   async createFolder(
@@ -282,6 +345,47 @@ export class FileStorageService {
     );
 
     return descendants.includes(potentialDescendantId);
+  }
+
+  private findSameNameNode(name: string, nodes: FileNode[]): FileNode | null {
+    const normalizedTargetName = name.toLocaleLowerCase();
+
+    return (
+      nodes.find(
+        (node) => (node.name ?? "").toLocaleLowerCase() === normalizedTargetName,
+      ) ?? null
+    );
+  }
+
+  private getNextWindowsFileName(fileName: string, siblings: FileNode[]): string {
+    const usedNames = new Set(
+      siblings.map((node) => (node.name ?? "").toLocaleLowerCase()),
+    );
+
+    const { baseName, extension } = this.splitFileName(fileName);
+    let counter = 2;
+    let candidate = `${baseName} (${counter})${extension}`;
+
+    while (usedNames.has(candidate.toLocaleLowerCase())) {
+      counter += 1;
+      candidate = `${baseName} (${counter})${extension}`;
+    }
+
+    return candidate;
+  }
+
+  private splitFileName(fileName: string): { baseName: string; extension: string } {
+    const lastDotIndex = fileName.lastIndexOf(".");
+    const hasExtension = lastDotIndex > 0 && lastDotIndex < fileName.length - 1;
+
+    if (!hasExtension) {
+      return { baseName: fileName, extension: "" };
+    }
+
+    return {
+      baseName: fileName.slice(0, lastDotIndex),
+      extension: fileName.slice(lastDotIndex),
+    };
   }
 
   private collectDescendantIds(

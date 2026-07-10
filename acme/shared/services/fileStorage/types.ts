@@ -20,6 +20,12 @@ export type UpdateFileNodeInput = {
   parentId?: string | null;
 };
 
+export type UploadNameConflictStrategy = "error" | "overwrite" | "rename";
+
+export type UploadFileOptions = {
+  nameConflict?: UploadNameConflictStrategy;
+};
+
 export type StoredFileNode = Omit<FileNode, "createdAt" | "updatedAt"> & {
   createdAt: number;
   updatedAt: number;

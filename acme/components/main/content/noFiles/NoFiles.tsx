@@ -1,9 +1,13 @@
 "use client";
 
-import { partitionFiles, toAcceptAttribute } from "@/components/main/content/dragNDrop/utils";
+import {
+  partitionFiles,
+  toAcceptAttribute,
+  uploadFileWithConflictHandling,
+} from "@/components/main/content/dragNDrop/utils";
 import { Button } from "@/components/shared/Button/Button";
 import { Loader } from "@/components/shared/Loader/Loader";
-import { fileStorageService } from "@/shared/services";
+import { type UploadNameConflictStrategy } from "@/shared/services";
 import { faFolder } from "@fortawesome/free-regular-svg-icons";
 import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -14,6 +18,7 @@ interface NoFilesProps {
   onUploaded?: () => void;
   onFileUploadSuccess?: (file: File) => void;
   onFileUploadError?: (file: File, error: unknown) => void;
+  onFileNameConflict?: (file: File) => Promise<UploadNameConflictStrategy | "skip">;
 }
 
 const ACCEPTED_MIME_TYPES = ["application/pdf"];
@@ -23,6 +28,7 @@ export const NoFiles = ({
   onUploaded,
   onFileUploadSuccess,
   onFileUploadError,
+  onFileNameConflict,
 }: NoFilesProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -40,23 +46,25 @@ export const NoFiles = ({
     setIsUploading(true);
 
     try {
-      const uploadResults = await Promise.allSettled(
-        accepted.map((file) => fileStorageService.upload(file, parentId)),
-      );
-
       let hasSuccess = false;
 
-      uploadResults.forEach((result, index) => {
-        const file = accepted[index];
+      for (const file of accepted) {
+        const result = await uploadFileWithConflictHandling(
+          file,
+          parentId,
+          onFileNameConflict,
+        );
 
-        if (result.status === "fulfilled") {
+        if (result.status === "success") {
           hasSuccess = true;
-          onFileUploadSuccess?.(file);
-          return;
+          onFileUploadSuccess?.(result.file);
+          continue;
         }
 
-        onFileUploadError?.(file, result.reason);
-      });
+        if (result.status === "error") {
+          onFileUploadError?.(result.file, result.error);
+        }
+      }
 
       if (hasSuccess) {
         onUploaded?.();

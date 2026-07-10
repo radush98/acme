@@ -1,5 +1,6 @@
 export {
   FileStorageService,
+  FileUploadNameConflictError,
   fileStorageService,
   formatFileSizeInMb,
   getFormatFromFile,
@@ -11,5 +12,7 @@ export type {
   FileNodeType,
   FileNodeWithUrl,
   StoredFileNode,
+  UploadFileOptions,
+  UploadNameConflictStrategy,
   UpdateFileNodeInput,
 } from "./fileStorage";

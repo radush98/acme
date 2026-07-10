@@ -12,6 +12,8 @@ interface ShowToastParams {
   fileName?: string;
   size?: string;
   actions?: ToastAction[];
+  duration?: number;
+  onClose?: () => void;
 }
 
 export function useUploadToasts() {
@@ -23,6 +25,8 @@ export function useUploadToasts() {
       fileName,
       size,
       actions = [],
+      duration = 4500,
+      onClose,
     }: ShowToastParams) => {
       toast.custom(
         (toastItem) => (
@@ -39,10 +43,13 @@ export function useUploadToasts() {
                 toast.dismiss(toastItem.id);
               },
             }))}
-            onClose={() => toast.dismiss(toastItem.id)}
+            onClose={() => {
+              onClose?.();
+              toast.dismiss(toastItem.id);
+            }}
           />
         ),
-        { duration: 4500 },
+        { duration },
       );
     },
     [],
@@ -75,6 +82,8 @@ export function useUploadToasts() {
       fileName,
       size,
       actions,
+      duration,
+      onClose,
     }: Omit<ShowToastParams, "variant">) => {
       showToast({
         variant: "warning",
@@ -83,6 +92,8 @@ export function useUploadToasts() {
         fileName,
         size,
         actions,
+        duration,
+        onClose,
       });
     },
     [showToast],

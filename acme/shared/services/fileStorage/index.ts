@@ -5,10 +5,12 @@ export type {
   FileNodeType,
   FileNodeWithUrl,
   StoredFileNode,
+  UploadFileOptions,
+  UploadNameConflictStrategy,
   UpdateFileNodeInput,
 } from "./types";
 
-export { FileStorageService } from "./fileStorageService";
+export { FileStorageService, FileUploadNameConflictError } from "./fileStorageService";
 export {
   formatFileSizeInMb,
   getFormatFromFile,
