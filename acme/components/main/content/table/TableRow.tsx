@@ -25,10 +25,10 @@ export const TableRow: React.FC<TableRowProps> = ({ type, createdAt, name, size,
         <td className="py-4 px-4 text-muted-foreground">{size || '-'}</td>
         <td className="px-4 py-4">
             <div className="flex items-center gap-2">
-        <button>
+        <button type="button" onClick={(event) => event.stopPropagation()} className="hover:cursor-pointer">
                 <FontAwesomeIcon icon={faPencil} className="w-4 h-4 text-primary opacity-70" />
             </button>
-            <button>
+            <button type="button" onClick={(event) => event.stopPropagation()} className="hover:cursor-pointer">
                 <FontAwesomeIcon icon={faTrashAlt} className="w-4 h-4 text-destructive" />
             </button>
             </div>

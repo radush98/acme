@@ -24,6 +24,7 @@ function toTableRow(node: FileNode): TableRowProps {
 
 export const FileExplorer = () => {
   const [items, setItems] = useState<TableRowProps[]>([]);
+  const [breadcrumbs, setBreadcrumbs] = useState<FileNode[]>([]);
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
 
   const loadItems = useCallback(async () => {
@@ -31,19 +32,47 @@ export const FileExplorer = () => {
     setItems(children.map(toTableRow));
   }, [currentFolderId]);
 
+  const loadBreadcrumbs = useCallback(async () => {
+    const path = await fileStorageService.getBreadcrumbs(currentFolderId);
+    setBreadcrumbs(path);
+  }, [currentFolderId]);
+
   useEffect(() => {
     void loadItems();
-  }, [loadItems]);
+    void loadBreadcrumbs();
+  }, [loadItems, loadBreadcrumbs]);
+
+  const handleNavigate = (folderId: string | null) => {
+    setCurrentFolderId(folderId);
+  };
 
   const handleFolderOpen = (folderId: string) => {
     setCurrentFolderId(folderId);
   };
 
+  const handleCreateFolder = async () => {
+    const name = window.prompt("Enter folder name");
+
+    if (!name?.trim()) {
+      return;
+    }
+
+    await fileStorageService.createFolder(name.trim(), currentFolderId);
+    await loadItems();
+  };
+
   return (
     <>
-      <LocationHeader>
-        <Button primary className="flex items-center gap-2">
-          <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
+      <LocationHeader
+        breadcrumbs={breadcrumbs}
+        onNavigate={handleNavigate}
+      >
+        <Button
+          primary
+          className="flex items-center gap-2"
+          onClick={() => void handleCreateFolder()}
+        >
+          <FontAwesomeIcon icon={faPlus} className="h-4 w-4" />
           Create Folder
         </Button>
       </LocationHeader>
