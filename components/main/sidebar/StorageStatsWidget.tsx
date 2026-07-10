@@ -45,7 +45,14 @@ export const StorageStatsWidget: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    void loadStats();
+    let cancelled = false;
+
+    void (async () => {
+      const nextStats = await fileStorageService.getStorageStats();
+      if (!cancelled) {
+        setStats(nextStats);
+      }
+    })();
 
     const handleStorageChanged = () => {
       void loadStats();
@@ -54,6 +61,7 @@ export const StorageStatsWidget: React.FC = () => {
     window.addEventListener(STORAGE_CHANGED_EVENT, handleStorageChanged);
 
     return () => {
+      cancelled = true;
       window.removeEventListener(STORAGE_CHANGED_EVENT, handleStorageChanged);
     };
   }, [loadStats]);

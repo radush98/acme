@@ -19,15 +19,25 @@ interface RenameModalProps {
   onClearError?: () => void;
 }
 
-export const RenameModal: React.FC<RenameModalProps> = ({
-  isOpen,
+interface RenameModalFormProps {
+  onClose: () => void;
+  onSubmit: (name: string) => void | Promise<void>;
+  itemType: FileNodeType;
+  initialName: string;
+  existingNames: string[];
+  isSubmitting: boolean;
+  submitError: string | null;
+  onClearError?: () => void;
+}
+
+const RenameModalForm: React.FC<RenameModalFormProps> = ({
   onClose,
   onSubmit,
   itemType,
   initialName,
-  existingNames = [],
-  isSubmitting = false,
-  submitError = null,
+  existingNames,
+  isSubmitting,
+  submitError,
   onClearError,
 }) => {
   const inputId = useId();
@@ -63,12 +73,6 @@ export const RenameModal: React.FC<RenameModalProps> = ({
   const isNameValid = !nameValidationError && !isNameUnchanged;
 
   useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    setName(initialName);
-
     const frameId = requestAnimationFrame(() => {
       const input = document.getElementById(inputId) as HTMLInputElement | null;
       input?.focus();
@@ -76,7 +80,7 @@ export const RenameModal: React.FC<RenameModalProps> = ({
     });
 
     return () => cancelAnimationFrame(frameId);
-  }, [isOpen, initialName, inputId]);
+  }, [inputId]);
 
   const handleSubmit = async () => {
     if (!trimmedName || isSubmitting || !isNameValid) {
@@ -89,7 +93,7 @@ export const RenameModal: React.FC<RenameModalProps> = ({
   const itemLabel = itemType === "folder" ? "folder" : "file";
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} ariaLabel={`Rename ${itemLabel}`}>
+    <>
       <ModalHeader title={`Rename ${itemLabel}`} onClose={onClose} />
       <div className="px-6 py-4">
         <Input
@@ -131,6 +135,37 @@ export const RenameModal: React.FC<RenameModalProps> = ({
           Rename
         </Button>
       </ModalFooter>
+    </>
+  );
+};
+
+export const RenameModal: React.FC<RenameModalProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  itemType,
+  initialName,
+  existingNames = [],
+  isSubmitting = false,
+  submitError = null,
+  onClearError,
+}) => {
+  const itemLabel = itemType === "folder" ? "folder" : "file";
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} ariaLabel={`Rename ${itemLabel}`}>
+      {isOpen ? (
+        <RenameModalForm
+          onClose={onClose}
+          onSubmit={onSubmit}
+          itemType={itemType}
+          initialName={initialName}
+          existingNames={existingNames}
+          isSubmitting={isSubmitting}
+          submitError={submitError ?? null}
+          onClearError={onClearError}
+        />
+      ) : null}
     </Modal>
   );
 };

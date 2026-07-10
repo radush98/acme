@@ -16,13 +16,21 @@ interface CreateFolderModalProps {
   onClearError?: () => void;
 }
 
-export const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
-  isOpen,
+interface CreateFolderModalFormProps {
+  onClose: () => void;
+  onSubmit: (name: string) => void | Promise<void>;
+  existingNames: string[];
+  isSubmitting: boolean;
+  submitError: string | null;
+  onClearError?: () => void;
+}
+
+const CreateFolderModalForm: React.FC<CreateFolderModalFormProps> = ({
   onClose,
   onSubmit,
-  existingNames = [],
-  isSubmitting = false,
-  submitError = null,
+  existingNames,
+  isSubmitting,
+  submitError,
   onClearError,
 }) => {
   const inputId = useId();
@@ -50,17 +58,12 @@ export const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
   const isNameValid = !nameValidationError;
 
   useEffect(() => {
-    if (!isOpen) {
-      setName("");
-      return;
-    }
-
     const frameId = requestAnimationFrame(() => {
       document.getElementById(inputId)?.focus();
     });
 
     return () => cancelAnimationFrame(frameId);
-  }, [isOpen, inputId]);
+  }, [inputId]);
 
   const handleSubmit = async () => {
     const trimmedName = name.trim();
@@ -73,7 +76,7 @@ export const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} ariaLabel="Create folder">
+    <>
       <ModalHeader title="Create Folder" onClose={onClose} />
       <div className="px-6 py-4">
         <Input
@@ -115,6 +118,31 @@ export const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
           Create
         </Button>
       </ModalFooter>
+    </>
+  );
+};
+
+export const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  existingNames = [],
+  isSubmitting = false,
+  submitError = null,
+  onClearError,
+}) => {
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} ariaLabel="Create folder">
+      {isOpen ? (
+        <CreateFolderModalForm
+          onClose={onClose}
+          onSubmit={onSubmit}
+          existingNames={existingNames}
+          isSubmitting={isSubmitting}
+          submitError={submitError ?? null}
+          onClearError={onClearError}
+        />
+      ) : null}
     </Modal>
   );
 };
