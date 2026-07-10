@@ -183,6 +183,15 @@ export class FileStorageService {
     return updated;
   }
 
+  async getDescendantCount(id: string): Promise<number> {
+    await this.init();
+
+    const allNodes = await this.getAllStoredNodes();
+    const idsToDelete = this.collectDescendantIds(allNodes, id);
+
+    return Math.max(idsToDelete.length - 1, 0);
+  }
+
   async delete(id: string): Promise<void> {
     await this.init();
 

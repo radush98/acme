@@ -1,6 +1,7 @@
 "use client";
 
 import { CreateFolderModal } from "@/components/main/content/createFolderModal/CreateFolderModal";
+import { DeleteModal } from "@/components/main/content/deleteModal/DeleteModal";
 import { DragNDrop } from "@/components/main/content/dragNDrop/DragNDrop";
 import { LocationHeader } from "@/components/main/content/locationHeader/LocationHeader";
 import { Table } from "@/components/main/content/table/Table";
@@ -13,6 +14,7 @@ import {
 import {
   fileStorageService,
   type FileNode,
+  type FileNodeType,
   type UploadNameConflictStrategy,
 } from "@/shared/services";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
@@ -37,6 +39,13 @@ export const FileExplorer = () => {
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [isCreateFolderModalOpen, setIsCreateFolderModalOpen] = useState(false);
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    type: FileNodeType;
+    name: string;
+  } | null>(null);
+  const [descendantCount, setDescendantCount] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { showUploadSuccessToast, showUploadErrorToast, showWarningToast } =
     useUploadToasts();
 
@@ -61,6 +70,38 @@ export const FileExplorer = () => {
 
   const handleFolderOpen = (folderId: string) => {
     setCurrentFolderId(folderId);
+  };
+
+  const handleDeleteRequest = async (item: TableRowProps) => {
+    setDeleteTarget({
+      id: item.id,
+      type: item.type,
+      name: item.name,
+    });
+
+    if (item.type === "folder") {
+      const count = await fileStorageService.getDescendantCount(item.id);
+      setDescendantCount(count);
+      return;
+    }
+
+    setDescendantCount(0);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      await fileStorageService.delete(deleteTarget.id);
+      setDeleteTarget(null);
+      await loadItems();
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleCreateFolder = async (name: string) => {
@@ -119,6 +160,15 @@ export const FileExplorer = () => {
         onClose={() => setIsCreateFolderModalOpen(false)}
         onSubmit={handleCreateFolder}
       />
+      <DeleteModal
+        isOpen={Boolean(deleteTarget)}
+        itemType={deleteTarget?.type ?? "file"}
+        itemName={deleteTarget?.name ?? ""}
+        descendantCount={descendantCount}
+        isDeleting={isDeleting}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleConfirmDelete}
+      />
       <UploadToaster />
       {items.length > 0 ? (
         <>
@@ -135,11 +185,14 @@ export const FileExplorer = () => {
             </div>
           </DragNDrop>
           <Table
-            items={items.map((item) =>
-              item.type === "folder"
-                ? { ...item, onClick: () => handleFolderOpen(item.id) }
-                : item,
-            )}
+            items={items.map((item) => ({
+              ...item,
+              onClick:
+                item.type === "folder"
+                  ? () => handleFolderOpen(item.id)
+                  : undefined,
+              onDelete: () => void handleDeleteRequest(item),
+            }))}
           />
         </>
       ) : (

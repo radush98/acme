@@ -12,9 +12,17 @@ export interface TableRowProps {
     createdAt: Date;
     updatedAt: Date;
     onClick?: () => void;
+    onDelete?: () => void;
 }
 
-export const TableRow: React.FC<TableRowProps> = ({ type, createdAt, name, size, updatedAt, onClick
+export const TableRow: React.FC<TableRowProps> = ({
+    type,
+    createdAt,
+    name,
+    size,
+    updatedAt,
+    onClick,
+    onDelete,
 }) => {
     return <tr
         className="table w-full table-fixed border-b border-border cursor-pointer transition-colors hover:bg-accent"
@@ -29,7 +37,14 @@ export const TableRow: React.FC<TableRowProps> = ({ type, createdAt, name, size,
                 <button type="button" onClick={(event) => event.stopPropagation()} className="hover:cursor-pointer">
                     <FontAwesomeIcon icon={faPencil} className="w-4 h-4 text-primary opacity-70" />
                 </button>
-                <button type="button" onClick={(event) => event.stopPropagation()} className="hover:cursor-pointer">
+                <button
+                    type="button"
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        onDelete?.();
+                    }}
+                    className="hover:cursor-pointer"
+                >
                     <FontAwesomeIcon icon={faTrashAlt} className="w-4 h-4 text-destructive" />
                 </button>
             </div>
