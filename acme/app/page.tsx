@@ -1,4 +1,5 @@
 import { Content } from "@/components/main/content/Content";
+import { DragNDrop } from "@/components/main/content/dragNDrop/DragNDrop";
 import { Header } from "@/components/main/header/Header";
 import { Logo } from "@/components/main/logo/Logo";
 import { Sidebar } from "@/components/main/sidebar/Sidebar";
@@ -18,7 +19,12 @@ export default function Home() {
           ))}
         </Sidebar>
         <Content>
-          <h1>Test</h1>
+            <DragNDrop>
+              <div className="flex flex-col gap-2">
+                <h1 className="text-2xl font-bold">Drag and Drop</h1>
+                <p className="text-sm text-gray-500">Drag and drop files here</p>
+              </div>
+            </DragNDrop>
         </Content>
       </div>
     </div>

@@ -3,10 +3,12 @@
 import clsx from "clsx";
 import { useRef, useState, type DragEvent, type ReactNode } from "react";
 import { partitionFiles, toAcceptAttribute } from "./utils";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUpload } from "@fortawesome/free-solid-svg-icons";
 
 interface DragNDropProps {
   children?: ReactNode;
-  acceptedMimeTypes: string[];
+  acceptedMimeTypes?: string[];
   accept?: string;
   onFiles?: (files: File[]) => void;
   onReject?: (files: File[]) => void;
@@ -16,7 +18,7 @@ interface DragNDropProps {
 
 export const DragNDrop: React.FC<DragNDropProps> = ({
   children,
-  acceptedMimeTypes,
+  acceptedMimeTypes = ["application/pdf"],
   accept,
   onFiles,
   onReject,
@@ -67,7 +69,7 @@ export const DragNDrop: React.FC<DragNDropProps> = ({
       role="button"
       tabIndex={0}
       className={clsx(
-        "torn-zone relative min-h-40 cursor-pointer transition-shadow",
+        "relative min-h-40 cursor-pointer transition-shadow border-2 border-dashed border-gray-300 rounded-md",
         isDragging && "ring-2 ring-primary ring-offset-2",
         className,
       )}
@@ -90,7 +92,10 @@ export const DragNDrop: React.FC<DragNDropProps> = ({
         className="hidden"
         onChange={(event) => handleFiles(event.target.files)}
       />
-      <div className="relative z-10 flex min-h-40 items-center justify-center p-6">
+      <div className="relative z-10 flex min-h-40 items-center justify-center p-6 flex-col gap-2 text-center">
+        <div className="flex items-center justify-center bg-accent rounded-full p-2">
+            <FontAwesomeIcon icon={faUpload} className="w-10 h-10 text-primary" />
+        </div>
         {children}
       </div>
     </div>
