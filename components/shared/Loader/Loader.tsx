@@ -1,8 +1,9 @@
 "use client";
 
 import clsx from "clsx";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useIsClient } from "../hooks/useIsClient";
 
 interface LoaderProps {
   isOpen: boolean;
@@ -17,11 +18,7 @@ export const Loader: React.FC<LoaderProps> = ({
   className,
   children,
 }) => {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const isClient = useIsClient();
 
   useEffect(() => {
     if (!isOpen) {
@@ -36,7 +33,7 @@ export const Loader: React.FC<LoaderProps> = ({
     };
   }, [isOpen]);
 
-  if (!mounted || !isOpen) {
+  if (!isClient || !isOpen) {
     return null;
   }
 

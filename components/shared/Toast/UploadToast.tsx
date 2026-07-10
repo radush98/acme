@@ -76,7 +76,7 @@ export const UploadToast: React.FC<UploadToastProps> = ({
         ) : null}
         {fileName ? (
           <p className="truncate text-base font-semibold text-foreground">
-            "{fileName}" {size ? `(${size}).` : ""}
+            {`"${fileName}"${size ? ` (${size}).` : ""}`}
           </p>
         ) : null}
         {actions.length ? (

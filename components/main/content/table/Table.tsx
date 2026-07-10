@@ -14,7 +14,7 @@ export const Table: React.FC<TableProps> = ({ items }) => {
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-border">
             <table className="flex h-full min-h-0 w-full table-fixed flex-col">
                 <thead className="block shrink-0">
-                    <tr className="table w-full table-fixed">
+                    <tr className={rowClassName}>
                         <th colSpan={5} className="border-b border-border px-4 py-4 text-left text-sm font-500 text-muted-foreground">
                             <div className="flex items-center gap-2">
                                 <FontAwesomeIcon icon={faList} className="h-4 w-4" />
@@ -22,7 +22,7 @@ export const Table: React.FC<TableProps> = ({ items }) => {
                             </div>
                         </th>
                     </tr>
-                    <tr className={"table w-full table-fixed border-b border-border text-sm text-muted-foreground"}>
+                    <tr className={`${rowClassName} border-b border-border text-sm text-muted-foreground`}>
                         <th className="w-[35%] px-4 py-2 text-left font-500">Name</th>
                         <th className="px-4 py-2 text-left font-500">Created At</th>
                         <th className="px-4 py-2 text-left font-500">Updated At</th>
