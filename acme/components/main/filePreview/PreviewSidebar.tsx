@@ -1,4 +1,8 @@
+import { Button } from "@/components/shared/Button/Button";
 import { formatFileSizeInMb, type FileNode } from "@/shared/services";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 interface PreviewSidebarProps {
@@ -35,6 +39,16 @@ export const PreviewSidebar: React.FC<PreviewSidebarProps> = ({ file }) => {
 
   return (
     <aside className="flex w-80 shrink-0 flex-col gap-6 overflow-y-auto border-l border-border bg-card p-6">
+      <Link href="/">
+        <Button
+          type="button"
+          className="flex w-full items-center justify-center gap-2 border border-border"
+        >
+          <FontAwesomeIcon icon={faArrowLeft} className="h-4 w-4" />
+          Back to Explorer
+        </Button>
+      </Link>
+
       <section className="space-y-4">
         <SectionTitle>DOCUMENT METADATA</SectionTitle>
         <div className="space-y-3">
