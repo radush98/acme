@@ -4,7 +4,7 @@ import { Header } from "@/components/main/header/Header";
 import { Logo } from "@/components/main/logo/Logo";
 import { Sidebar } from "@/components/main/sidebar/Sidebar";
 import { SidebarItem } from "@/components/main/sidebar/sidebarItem/SidebarItem";
-import { Table } from "@/components/shared/Table/Table";
+import { Table } from "@/components/main/content/table/Table";
 import { items } from "@/shared/constants/mock";
 import { SIDEBAR_ITEMS } from "@/shared/constants/siderbarItems";
 

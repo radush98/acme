@@ -1,4 +1,4 @@
-import { TableRowProps } from "@/components/shared/Table/TableRow";
+import { TableRowProps } from "@/components/main/content/table/TableRow";
 
 // TODO: Remove
 export const items: TableRowProps[] = [
