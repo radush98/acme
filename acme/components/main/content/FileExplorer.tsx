@@ -75,9 +75,29 @@ export const FileExplorer = () => {
   }, [currentFolderId]);
 
   useEffect(() => {
-    void loadItems();
-    void loadBreadcrumbs();
-  }, [loadItems, loadBreadcrumbs]);
+    let cancelled = false;
+
+    const loadFolderData = async () => {
+      const [children, path] = await Promise.all([
+        fileStorageService.getChildren(currentFolderId),
+        fileStorageService.getBreadcrumbs(currentFolderId),
+      ]);
+
+      if (cancelled) {
+        return;
+      }
+
+      setItems(children.map(toTableRow));
+      setBreadcrumbs(path);
+      window.dispatchEvent(new Event(STORAGE_CHANGED_EVENT));
+    };
+
+    void loadFolderData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentFolderId]);
 
   const handleNavigate = (folderId: string | null) => {
     setCurrentFolderId(folderId);
