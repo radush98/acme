@@ -1,4 +1,4 @@
-import { MIME_EXTENSIONS } from "@/shared/constants/mimeExtensions";
+import { MIME_EXTENSIONS } from "@/shared/constants";
 
 export function isAcceptedFile(
   file: File,
