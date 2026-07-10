@@ -16,6 +16,8 @@ interface DragNDropProps {
   onReject?: (files: File[]) => void;
   onUploaded?: (nodes: FileNode[]) => void;
   onUploadError?: (error: unknown) => void;
+  onFileUploadSuccess?: (file: File, node: FileNode) => void;
+  onFileUploadError?: (file: File, error: unknown) => void;
   parentId?: string | null;
   multiple?: boolean;
   className?: string;
@@ -29,6 +31,8 @@ export const DragNDrop: React.FC<DragNDropProps> = ({
   onReject,
   onUploaded,
   onUploadError,
+  onFileUploadSuccess,
+  onFileUploadError,
   parentId = null,
   multiple = true,
   className,
@@ -41,14 +45,36 @@ export const DragNDrop: React.FC<DragNDropProps> = ({
     setIsUploading(true);
 
     try {
-      const nodes = await Promise.all(
+      const uploadResults = await Promise.allSettled(
         files.map((file) => fileStorageService.upload(file, parentId)),
       );
 
-      onUploaded?.(nodes);
-      onFiles?.(files);
-    } catch (error) {
-      onUploadError?.(error);
+      const uploadedNodes: FileNode[] = [];
+      const uploadedFiles: File[] = [];
+      const errors: unknown[] = [];
+
+      uploadResults.forEach((result, index) => {
+        const file = files[index];
+
+        if (result.status === "fulfilled") {
+          uploadedNodes.push(result.value);
+          uploadedFiles.push(file);
+          onFileUploadSuccess?.(file, result.value);
+          return;
+        }
+
+        errors.push(result.reason);
+        onFileUploadError?.(file, result.reason);
+      });
+
+      if (uploadedNodes.length) {
+        onUploaded?.(uploadedNodes);
+        onFiles?.(uploadedFiles);
+      }
+
+      if (errors.length) {
+        onUploadError?.(errors[0]);
+      }
     } finally {
       setIsUploading(false);
     }

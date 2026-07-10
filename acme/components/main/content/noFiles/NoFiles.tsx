@@ -12,11 +12,18 @@ import { useRef, useState } from "react";
 interface NoFilesProps {
   parentId?: string | null;
   onUploaded?: () => void;
+  onFileUploadSuccess?: (file: File) => void;
+  onFileUploadError?: (file: File, error: unknown) => void;
 }
 
 const ACCEPTED_MIME_TYPES = ["application/pdf"];
 
-export const NoFiles = ({ parentId = null, onUploaded }: NoFilesProps) => {
+export const NoFiles = ({
+  parentId = null,
+  onUploaded,
+  onFileUploadSuccess,
+  onFileUploadError,
+}: NoFilesProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -33,10 +40,27 @@ export const NoFiles = ({ parentId = null, onUploaded }: NoFilesProps) => {
     setIsUploading(true);
 
     try {
-      await Promise.all(
+      const uploadResults = await Promise.allSettled(
         accepted.map((file) => fileStorageService.upload(file, parentId)),
       );
-      onUploaded?.();
+
+      let hasSuccess = false;
+
+      uploadResults.forEach((result, index) => {
+        const file = accepted[index];
+
+        if (result.status === "fulfilled") {
+          hasSuccess = true;
+          onFileUploadSuccess?.(file);
+          return;
+        }
+
+        onFileUploadError?.(file, result.reason);
+      });
+
+      if (hasSuccess) {
+        onUploaded?.();
+      }
     } finally {
       setIsUploading(false);
 
@@ -56,7 +80,7 @@ export const NoFiles = ({ parentId = null, onUploaded }: NoFilesProps) => {
           Drag and drop files here or click the button below to upload
         </p>
         <Button
-          primary
+          variant="primary"
           disabled={isUploading}
           onClick={() => inputRef.current?.click()}
           className="flex items-center gap-2"

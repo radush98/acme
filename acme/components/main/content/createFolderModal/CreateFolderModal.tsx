@@ -143,7 +143,7 @@ export const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
         </Button>
         <Button
           type="button"
-          primary
+          variant="primary"
           disabled={!isNameValid || isSubmitting}
           onClick={() => void handleSubmit()}
         >

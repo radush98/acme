@@ -6,6 +6,10 @@ import { LocationHeader } from "@/components/main/content/locationHeader/Locatio
 import { Table } from "@/components/main/content/table/Table";
 import { TableRowProps } from "@/components/main/content/table/TableRow";
 import { Button } from "@/components/shared/Button/Button";
+import {
+  UploadToaster,
+  useUploadToasts,
+} from "@/components/shared/Toast/useUploadToasts";
 import { fileStorageService, type FileNode } from "@/shared/services";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -29,6 +33,7 @@ export const FileExplorer = () => {
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [isCreateFolderModalOpen, setIsCreateFolderModalOpen] = useState(false);
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  const { showUploadSuccessToast, showUploadErrorToast } = useUploadToasts();
 
   const loadItems = useCallback(async () => {
     const children = await fileStorageService.getChildren(currentFolderId);
@@ -71,7 +76,7 @@ export const FileExplorer = () => {
         onNavigate={handleNavigate}
       >
         <Button
-          primary
+          variant="primary"
           className="flex items-center gap-2"
           onClick={() => setIsCreateFolderModalOpen(true)}
         >
@@ -85,9 +90,15 @@ export const FileExplorer = () => {
         onClose={() => setIsCreateFolderModalOpen(false)}
         onSubmit={handleCreateFolder}
       />
+      <UploadToaster />
       {items.length > 0 ? (
         <>
-          <DragNDrop parentId={currentFolderId} onUploaded={() => void loadItems()}>
+          <DragNDrop
+            parentId={currentFolderId}
+            onUploaded={() => void loadItems()}
+            onFileUploadSuccess={showUploadSuccessToast}
+            onFileUploadError={showUploadErrorToast}
+          >
             <div className="flex flex-col gap-2">
               <h1 className="text-2xl font-bold">Drag and Drop</h1>
               <p className="text-sm text-gray-500">Drag and drop files here</p>
@@ -105,6 +116,8 @@ export const FileExplorer = () => {
         <NoFiles
           parentId={currentFolderId}
           onUploaded={() => void loadItems()}
+          onFileUploadSuccess={showUploadSuccessToast}
+          onFileUploadError={showUploadErrorToast}
         />
       )}
     </>
