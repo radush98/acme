@@ -12,6 +12,7 @@ export interface TableRowProps {
     createdAt: Date;
     updatedAt: Date;
     onClick?: () => void;
+    onRename?: () => void;
     onDelete?: () => void;
 }
 
@@ -22,6 +23,7 @@ export const TableRow: React.FC<TableRowProps> = ({
     size,
     updatedAt,
     onClick,
+    onRename,
     onDelete,
 }) => {
     return <tr
@@ -34,7 +36,14 @@ export const TableRow: React.FC<TableRowProps> = ({
         <td className="py-4 px-4 text-muted-foreground">{formatFileSizeInMb(size)}</td>
         <td className="px-4 py-4">
             <div className="flex items-center gap-2">
-                <button type="button" onClick={(event) => event.stopPropagation()} className="hover:cursor-pointer">
+                <button
+                    type="button"
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        onRename?.();
+                    }}
+                    className="hover:cursor-pointer"
+                >
                     <FontAwesomeIcon icon={faPencil} className="w-4 h-4 text-primary opacity-70" />
                 </button>
                 <button

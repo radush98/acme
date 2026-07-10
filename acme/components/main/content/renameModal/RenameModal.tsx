@@ -4,40 +4,50 @@ import { Button } from "@/components/shared/Button/Button";
 import { Input } from "@/components/shared/Input/Input";
 import { Modal, ModalFooter, ModalHeader } from "@/components/shared/Modal";
 import { createDuplicateNameValidator, createWindowsNameValidators } from "@/components/shared/validators/windowsNameValidators";
+import type { FileNodeType } from "@/shared/services";
 import { useEffect, useId, useMemo, useState } from "react";
 
-interface CreateFolderModalProps {
+interface RenameModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (name: string) => void | Promise<void>;
+  itemType: FileNodeType;
+  initialName: string;
   existingNames?: string[];
   isSubmitting?: boolean;
   submitError?: string | null;
   onClearError?: () => void;
 }
 
-export const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
+export const RenameModal: React.FC<RenameModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
+  itemType,
+  initialName,
   existingNames = [],
   isSubmitting = false,
   submitError = null,
   onClearError,
 }) => {
   const inputId = useId();
-  const [name, setName] = useState("");
+  const [name, setName] = useState(initialName);
 
-  const folderNameValidators = useMemo(
+  const nameValidators = useMemo(
     () => [
-      ...createWindowsNameValidators("Folder name is required."),
-      createDuplicateNameValidator(existingNames, { itemType: "folder" }),
+      ...createWindowsNameValidators(
+        itemType === "folder" ? "Folder name is required." : "File name is required.",
+      ),
+      createDuplicateNameValidator(existingNames, {
+        excludeName: initialName,
+        itemType,
+      }),
     ],
-    [existingNames],
+    [existingNames, initialName, itemType],
   );
 
   const nameValidationError = useMemo(() => {
-    for (const validator of folderNameValidators) {
+    for (const validator of nameValidators) {
       const message = validator(name);
       if (message) {
         return message;
@@ -45,26 +55,30 @@ export const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
     }
 
     return null;
-  }, [folderNameValidators, name]);
+  }, [name, nameValidators]);
 
-  const isNameValid = !nameValidationError;
+  const trimmedName = name.trim();
+  const isNameUnchanged =
+    trimmedName.toLocaleLowerCase() === initialName.toLocaleLowerCase();
+  const isNameValid = !nameValidationError && !isNameUnchanged;
 
   useEffect(() => {
     if (!isOpen) {
-      setName("");
       return;
     }
 
+    setName(initialName);
+
     const frameId = requestAnimationFrame(() => {
-      document.getElementById(inputId)?.focus();
+      const input = document.getElementById(inputId) as HTMLInputElement | null;
+      input?.focus();
+      input?.select();
     });
 
     return () => cancelAnimationFrame(frameId);
-  }, [isOpen, inputId]);
+  }, [isOpen, initialName, inputId]);
 
   const handleSubmit = async () => {
-    const trimmedName = name.trim();
-
     if (!trimmedName || isSubmitting || !isNameValid) {
       return;
     }
@@ -72,18 +86,20 @@ export const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
     await onSubmit(trimmedName);
   };
 
+  const itemLabel = itemType === "folder" ? "folder" : "file";
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} ariaLabel="Create folder">
-      <ModalHeader title="Create Folder" onClose={onClose} />
+    <Modal isOpen={isOpen} onClose={onClose} ariaLabel={`Rename ${itemLabel}`}>
+      <ModalHeader title={`Rename ${itemLabel}`} onClose={onClose} />
       <div className="px-6 py-4">
         <Input
-          label="Folder name"
+          label={`${itemType === "folder" ? "Folder" : "File"} name`}
           id={inputId}
           type="text"
           value={name}
           disabled={isSubmitting}
-          placeholder="Enter folder name"
-          validators={folderNameValidators}
+          placeholder={`Enter ${itemLabel} name`}
+          validators={nameValidators}
           error={nameValidationError ?? submitError}
           onChange={(event) => {
             onClearError?.();
@@ -112,7 +128,7 @@ export const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
           disabled={!isNameValid || isSubmitting}
           onClick={() => void handleSubmit()}
         >
-          Create
+          Rename
         </Button>
       </ModalFooter>
     </Modal>

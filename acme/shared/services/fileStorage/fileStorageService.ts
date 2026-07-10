@@ -130,6 +130,13 @@ export class FileStorageService {
     await this.init();
     await this.assertValidParent(parentId);
 
+    const siblings = await this.getChildren(parentId);
+    if (this.findSameNameNode(name, siblings)) {
+      throw new Error(
+        `A folder named "${name}" already exists in this folder.`,
+      );
+    }
+
     const now = new Date();
     const node: FileNode = {
       id: crypto.randomUUID(),
@@ -167,6 +174,15 @@ export class FileStorageService {
         if (isDescendant) {
           throw new Error("A folder cannot be moved into its own descendant.");
         }
+      }
+    }
+
+    if (input.name !== undefined) {
+      const siblings = await this.getChildren(existing.parentId);
+      if (this.findSameNameNode(input.name, siblings, id)) {
+        throw new Error(
+          `A ${existing.type} named "${input.name}" already exists in this folder.`,
+        );
       }
     }
 
@@ -356,12 +372,18 @@ export class FileStorageService {
     return descendants.includes(potentialDescendantId);
   }
 
-  private findSameNameNode(name: string, nodes: FileNode[]): FileNode | null {
+  private findSameNameNode(
+    name: string,
+    nodes: FileNode[],
+    excludeId?: string,
+  ): FileNode | null {
     const normalizedTargetName = name.toLocaleLowerCase();
 
     return (
       nodes.find(
-        (node) => (node.name ?? "").toLocaleLowerCase() === normalizedTargetName,
+        (node) =>
+          node.id !== excludeId &&
+          (node.name ?? "").toLocaleLowerCase() === normalizedTargetName,
       ) ?? null
     );
   }
