@@ -8,6 +8,7 @@ import { LocationHeader } from "@/components/main/content/locationHeader/Locatio
 import { Table } from "@/components/main/content/table/Table";
 import { TableRowProps } from "@/components/main/content/table/TableRow";
 import { Button } from "@/components/shared/Button/Button";
+import { STORAGE_CHANGED_EVENT } from "@/components/main/sidebar/StorageStatsWidget";
 import {
   UploadToaster,
   useUploadToasts,
@@ -63,6 +64,7 @@ export const FileExplorer = () => {
   const loadItems = useCallback(async () => {
     const children = await fileStorageService.getChildren(currentFolderId);
     setItems(children.map(toTableRow));
+    window.dispatchEvent(new Event(STORAGE_CHANGED_EVENT));
   }, [currentFolderId]);
 
   const loadBreadcrumbs = useCallback(async () => {

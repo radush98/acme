@@ -26,6 +26,12 @@ export type UploadFileOptions = {
   nameConflict?: UploadNameConflictStrategy;
 };
 
+export type StorageStats = {
+  totalSize: number;
+  fileCount: number;
+  folderCount: number;
+};
+
 export type StoredFileNode = Omit<FileNode, "createdAt" | "updatedAt"> & {
   createdAt: number;
   updatedAt: number;

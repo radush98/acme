@@ -1,6 +1,7 @@
 import type {
   FileNode,
   StoredFileNode,
+  StorageStats,
   UploadFileOptions,
   UpdateFileNodeInput,
 } from "./types";
@@ -197,6 +198,26 @@ export class FileStorageService {
     });
 
     return updated;
+  }
+
+  async getStorageStats(): Promise<StorageStats> {
+    await this.init();
+
+    const nodes = await this.getAllNodes();
+    let totalSize = 0;
+    let fileCount = 0;
+    let folderCount = 0;
+
+    for (const node of nodes) {
+      if (node.type === "file") {
+        fileCount += 1;
+        totalSize += node.size ?? 0;
+      } else {
+        folderCount += 1;
+      }
+    }
+
+    return { totalSize, fileCount, folderCount };
   }
 
   async getDescendantCount(id: string): Promise<number> {

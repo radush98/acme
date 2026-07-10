@@ -5,6 +5,7 @@ export type {
   FileNodeType,
   FileNodeWithUrl,
   StoredFileNode,
+  StorageStats,
   UploadFileOptions,
   UploadNameConflictStrategy,
   UpdateFileNodeInput,
